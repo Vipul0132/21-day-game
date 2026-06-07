@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>21-Day Habit Coach</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #3b82f6;
+            --success: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+
+        /* Setup Screen Style */
+        .setup-screen {
+            display: block;
+            text-align: left;
+        }
+
+        .setup-screen h2 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .goal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .goal-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid var(--border);
+            color: var(--text-main);
+            padding: 14px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .goal-btn:hover {
+            border-color: var(--primary);
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        /* Challenge Dashboard (Hidden initially if no goal) */
+        .challenge-dashboard {
+            display: none;
+        }
+
+        .assigned-task {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px dashed var(--primary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-size: 1.1rem;
+            color: #93c5fd;
+        }
+
+        /* Stats Panel */
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-val {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background-color: var(--border);
+            border-radius: 10px;
+            height: 12px;
+            width: 100%;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* Grid Setup */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .day-btn {
+            background-color: transparent;
+            border: 2px solid var(--border);
+            color: var(--text-main);
+            aspect-ratio: 1;
+            border-radius: 50%;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .day-btn:hover {
+            border-color: var(--primary);
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .day-btn.completed {
+            background-color: var(--success);
+            border-color: var(--success);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Buttons */
+        .reset-btn {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .reset-btn:hover {
+            color: #ef4444;
+            border-color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.05);
+        }
+
+        .celebration {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            color: var(--success);
+            font-weight: 600;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 480px) {
+            .grid { gap: 8px; }
+            h1 { font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>21-Day Habit Coach</h1>
+        <p class="subtitle">Commit to 21 days to form a permanent lifestyle change.</p>
+
+        <!-- STEP 1: ONBOARDING SCREEN -->
+        <div id="setup-screen" class="setup-screen">
+            <h2>What is your primary focus right now?</h2>
+            <div class="goal-options">
+                <button class="goal-btn" onclick="selectGoal('fitness')">💪 Fitness & Physical Health</button>
+                <button class="goal-btn" onclick="selectGoal('mind')">🧠 Mental Focus & Mindset</button>
+                <button class="goal-btn" onclick="selectGoal('productivity')">🚀 Productivity & Career</button>
+                <button class="goal-btn" onclick="selectGoal('creative')">🎨 Creativity & Personal Growth</button>
+            </div>
+        </div>
+
+        <!-- STEP 2: TRACKING DASHBOARD -->
+        <div id="challenge-dashboard" class="challenge-dashboard">
+            <div class="assigned-task">
+                <strong>Your Daily Task:</strong> <span id="task-text">Loading assignment...</span>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-box">
+                    <span id="completed-count" class="stat-val">0</span>
+                    <span class="stat-label">Days Kept</span>
+                </div>
+                <div class="stat-box">
+                    <span id="percent-val" class="stat-val">0%</span>
+                    <span class="stat-label">Progress</span>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div id="progress-bar" class="progress-bar"></div>
+            </div>
+
+            <div id="challenge-grid" class="grid"></div>
+
+            <div id="celebration-msg" class="celebration">
+                🎉 Incredible! You crushed your 21-day challenge and successfully adapted your assigned task into a real habit!
+            </div>
+
+            <div style="margin-top: 24px;">
+                <button id="reset-btn" class="reset-btn">Reset & Change Goal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TOTAL_DAYS = 21;
+        
+        // Task templates map based on user selection
+        const taskDatabase = {
+            fitness: "Exercise for 20 minutes (Run, Gym, or Yoga) and drink 3 liters of water.",
+            mind: "Meditate silently or practice deep breathing exercises for 10 minutes every morning.",
+            productivity: "Write down your top 3 tasks before opening social media, and block out 1 hour of deep work.",
+            creative: "Spend 20 minutes practicing a creative hobby (reading, writing, sketching, or coding a project)."
+        };
+
+        // DOM elements
+        const setupScreen = document.getElementById('setup-screen');
+        const dashboard = document.getElementById('challenge-dashboard');
+        const taskText = document.getElementById('task-text');
+        const grid = document.getElementById('challenge-grid');
+        const progressBar = document.getElementById('progress-bar');
+        const completedCountEl = document.getElementById('completed-count');
+        const percentValEl = document.getElementById('percent-val');
+        const celebrationMsg = document.getElementById('celebration-msg');
+        const resetBtn = document.getElementById('reset-btn');
+
+        // State retrieval
+        let currentGoal = localStorage.getItem('userGoal') || null;
+        let completedDays = JSON.parse(localStorage.getItem('challengeProgress')) || [];
+
+        // Logic to run on page load
+        function checkState() {
+            if (currentGoal && taskDatabase[currentGoal]) {
+                setupScreen.style.display = 'none';
+                dashboard.style.display = 'block';
+                taskText.innerText = taskDatabase[currentGoal];
+                initGrid();
+            } else {
+                setupScreen.style.display = 'block';
+                dashboard.style.display = 'none';
+            }
+        }
+
+        // Onboarding interaction
+        function selectGoal(goalKey) {
+            currentGoal = goalKey;
+            localStorage.setItem('userGoal', goalKey);
+            completedDays = []; // wipe previous progress for a clean slate
+            localStorage.setItem('challengeProgress', JSON.stringify(completedDays));
+            checkState();
+        }
+
+        // Grid Initialization
+        function initGrid() {
+            grid.innerHTML = '';
+            for (let i = 1; i <= TOTAL_DAYS; i++) {
+                const button = document.createElement('button');
+                button.classList.add('day-btn');
+                button.innerText = i;
+                
+                if (completedDays.includes(i)) {
+                    button.classList.add('completed');
+                }
+
+                button.addEventListener('click', () => toggleDay(i, button));
+                grid.appendChild(button);
+            }
+            updateStats();
+        }
+
+        // Grid selection toggle
+        function toggleDay(dayNum, buttonEl) {
+            if (completedDays.includes(dayNum)) {
+                completedDays = completedDays.filter(day => day !== dayNum);
+                buttonEl.classList.remove('completed');
+            } else {
+                completedDays.push(dayNum);
+                buttonEl.classList.add('completed');
+            }
+            
+            localStorage.setItem('challengeProgress', JSON.stringify(completedDays));
+            updateStats();
+        }
+
+        // Calculations & UI styling updates
+        function updateStats() {
+            const completedCount = completedDays.length;
+            const percentage = Math.round((completedCount / TOTAL_DAYS) * 100);
+
+            completedCountEl.innerText = completedCount;
+            percentValEl.innerText = `${percentage}%`;
+            progressBar.style.width = `${percentage}%`;
+
+            if (completedCount === TOTAL_DAYS) {
+                celebrationMsg.style.display = 'block';
+            } else {
+                celebrationMsg.style.display = 'none';
+            }
+        }
+
+        // Global Application Reset
+        resetBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to stop this challenge and select a brand new goal?')) {
+                currentGoal = null;
+                completedDays = [];
+                localStorage.removeItem('userGoal');
+                localStorage.removeItem('challengeProgress');
+                checkState();
+            }
+        });
+
+        // Initialize state engine
+        checkState();
+    </script>
+</body>
+</html>
